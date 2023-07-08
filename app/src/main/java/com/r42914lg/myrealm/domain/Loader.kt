@@ -42,8 +42,6 @@ data class InnerState<T>(
     val remoteError: Boolean,
 )
 
-data class Item(val prop1: String)
-
 class LoaderImpl(
     defaultData: List<Item>,
     private val remoteDataSource: RemoteDataSource,
