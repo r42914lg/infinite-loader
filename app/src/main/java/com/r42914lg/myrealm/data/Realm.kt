@@ -1,40 +1,31 @@
 package com.r42914lg.myrealm.data
 
+import com.r42914lg.myrealm.MyApp.Companion.CHUNK_SIZE
+import com.r42914lg.myrealm.domain.ItemEntity
 import io.realm.Realm
-import io.realm.RealmObject
-import io.realm.annotations.PrimaryKey
-import java.util.*
-
-open class VisitInfo : RealmObject() {
-
-    @PrimaryKey
-    var id = UUID.randomUUID().toString()
-
-    var visitCount: Int = 0
-
-}
 
 object DbInteractor {
-    private fun read() {
+    fun read(): List<ItemEntity> {
         val db = Realm.getDefaultInstance()
-        val visitInfo = db.where(VisitInfo::class.java).findFirst()
+        return db.where(ItemEntity::class.java)
+            .findAll()
     }
 
-    private fun update() {
+    fun addOrUpdate(items: List<ItemEntity>) {
         val db = Realm.getDefaultInstance()
-        val visitInfo = db.where(VisitInfo::class.java).findFirst()
-
         db.beginTransaction()
-        visitInfo?.apply {
-            visitCount += 1
+        items.forEach {
+            db.copyToRealmOrUpdate(it)
         }
-
         db.commitTransaction()
     }
 
-    private fun delete() {
+    fun deleteAll() {
         val db = Realm.getDefaultInstance()
-        val visitInfo = db.where(VisitInfo::class.java).findFirst()
-        visitInfo?.deleteFromRealm()
+        db.where(ItemEntity::class.java)
+            .findAll()
+            .forEach {
+                it?.deleteFromRealm()
+            }
     }
 }

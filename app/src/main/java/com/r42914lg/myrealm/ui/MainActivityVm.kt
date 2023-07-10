@@ -4,27 +4,51 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.r42914lg.myrealm.domain.Item
 import com.r42914lg.myrealm.domain.Loader
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 class MainActivityVm(
     private val loader: Loader<Item>,
 ) : ViewModel() {
 
-    val itemState = loader.state
+    private val itemState = loader.state
+    val uiState: Flow<UiState>
+        get() =
+            itemState.transform {
+                if (it.isError)
+                    UiState.Error
+                else if (it.isLoading)
+                    UiState.Loading
+                else
+                    UiState.RenderItems(it.pageableData.data)
+            }
 
     init {
+        load()
+    }
+
+    fun onAction(action: MainActivity.Action) {
+        when (action) {
+            MainActivity.Action.Load -> load()
+            MainActivity.Action.PullToRefresh -> pullToRefresh()
+            MainActivity.Action.ResetAndLoad -> resetAndLoad()
+        }
+    }
+
+    private fun load() {
         viewModelScope.launch {
             loader.load()
         }
     }
 
-    fun resetAndLoad() {
+    private fun resetAndLoad() {
         viewModelScope.launch {
             loader.resetAndLoad()
         }
     }
 
-    fun pullToRefresh() {
+    private fun pullToRefresh() {
         viewModelScope.launch {
             loader.pullToRefresh()
         }
@@ -33,5 +57,11 @@ class MainActivityVm(
     override fun onCleared() {
         super.onCleared()
         loader.onClear()
+    }
+
+    sealed interface UiState {
+        object Loading : UiState
+        object Error : UiState
+        class RenderItems(val data: List<Item>) : UiState
     }
 }

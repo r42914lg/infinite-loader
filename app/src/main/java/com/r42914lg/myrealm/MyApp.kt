@@ -18,4 +18,8 @@ class MyApp : Application() {
 
         Realm.setDefaultConfiguration(config)
     }
+
+    companion object {
+        const val CHUNK_SIZE = 3
+    }
 }

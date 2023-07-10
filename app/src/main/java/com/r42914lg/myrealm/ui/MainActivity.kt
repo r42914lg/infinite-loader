@@ -9,4 +9,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
+
+    sealed interface Action {
+        object Load : Action
+        object PullToRefresh : Action
+        object ResetAndLoad : Action
+    }
 }
