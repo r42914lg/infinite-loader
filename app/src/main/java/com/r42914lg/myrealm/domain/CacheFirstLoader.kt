@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-class BasicLoader(
-    private val defaultData: List<Item>,
+class CacheFirstLoader(
     private val remoteDataSource: RemoteDataSource,
     private val localRepository: LocalRepository,
 ) : Loader<List<Item>> {
@@ -21,7 +20,7 @@ class BasicLoader(
     private val cs = CoroutineScope(SupervisorJob())
 
     private val _state: MutableStateFlow<InnerState<ItemChunkDto<Item>>> =
-        MutableStateFlow(getDefaultInnerState(defaultData))
+        MutableStateFlow(getDefaultInnerState())
 
     override val state: Flow<Loader.State<List<Item>>>
         get() = _state.map {
@@ -40,7 +39,7 @@ class BasicLoader(
 
     override suspend fun resetAndLoad() {
         launchWork {
-            launchLoad(state = getDefaultInnerState(defaultData))
+            launchLoad(state = getDefaultInnerState())
         }
     }
 
@@ -163,9 +162,9 @@ class BasicLoader(
         )
     }
 
-    private fun <T> getDefaultInnerState(defaultData: List<T>): InnerState<ItemChunkDto<T>> =
+    private fun <T> getDefaultInnerState(): InnerState<ItemChunkDto<T>> =
         InnerState(
-            ItemChunkDto(defaultData, 0, true),
+            ItemChunkDto(listOf(), 0, true),
             isLoadingFromCache = false,
             isLoadingFromRemote = false,
             hasMoreInCache = true,

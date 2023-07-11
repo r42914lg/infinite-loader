@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 class MainActivityVm(
-    private val loader: Loader<Item>,
+    private val loader: Loader<List<Item>>,
 ) : ViewModel() {
 
     private val itemState = loader.state
@@ -21,7 +21,7 @@ class MainActivityVm(
                 else if (it.isLoading)
                     UiState.Loading
                 else
-                    UiState.RenderItems(it.pageableData.data)
+                    UiState.RenderItems(it.data)
             }
 
     init {
