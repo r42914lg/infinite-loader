@@ -2,7 +2,7 @@ package com.r42914lg.myrealm.domain
 
 import kotlinx.coroutines.flow.Flow
 
-interface Loader<T> {
+interface ReactiveLoader<T> {
     class State<T>(
         val data: T,
         val isLoading: Boolean,
@@ -10,16 +10,14 @@ interface Loader<T> {
     )
 
     data class InnerState<T>(
-        val currentData: T,
-        val isLoadingFromCache: Boolean,
+        val page: Int,
         val isLoadingFromRemote: Boolean,
-        val hasMoreInCache: Boolean,
         val hasMoreInRemote: Boolean,
         val pullToRefreshInProgress: Boolean,
         val remoteError: Boolean,
     )
 
-    val state: Flow<State<T>>
+    val state: Flow<State<Flow<T>>>
 
     fun load()
     fun resetAndLoad()

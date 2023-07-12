@@ -3,11 +3,11 @@ package com.r42914lg.myrealm.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.r42914lg.myrealm.domain.Item
-import com.r42914lg.myrealm.domain.Loader
+import com.r42914lg.myrealm.domain.ReactiveLoader
 import kotlinx.coroutines.launch
 
-class MainActivityVm(
-    private val loader: Loader<List<Item>>,
+class MainActivityVmReactive(
+    private val loader: ReactiveLoader<List<Item>>,
 ) : ViewModel() {
 
     val itemState = loader.state
@@ -45,11 +45,5 @@ class MainActivityVm(
     override fun onCleared() {
         super.onCleared()
         loader.onClear()
-    }
-
-    sealed interface UiState {
-        object Loading : UiState
-        object Error : UiState
-        class RenderItems(val data: List<Item>) : UiState
     }
 }

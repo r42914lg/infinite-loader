@@ -1,7 +1,8 @@
 package com.r42914lg.myrealm.domain
 
-import com.r42914lg.myrealm.data.LocalRepository
 import com.r42914lg.myrealm.data.RemoteDataSource
+import com.r42914lg.myrealm.data.Repository
+import com.r42914lg.myrealm.domain.Loader.*
 import com.r42914lg.myrealm.utils.doOnError
 import com.r42914lg.myrealm.utils.doOnSuccess
 import kotlinx.coroutines.*
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.map
 class BasicLoader(
     private val defaultData: List<Item>,
     private val remoteDataSource: RemoteDataSource,
-    private val localRepository: LocalRepository,
+    private val localRepository: Repository,
 ) : Loader<List<Item>> {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -23,28 +24,28 @@ class BasicLoader(
     private val _state: MutableStateFlow<InnerState<ItemChunkDto<Item>>> =
         MutableStateFlow(getDefaultInnerState(defaultData))
 
-    override val state: Flow<Loader.State<List<Item>>>
+    override val state: Flow<State<List<Item>>>
         get() = _state.map {
-            Loader.State(
+            State(
                 data = it.currentData.items,
                 isLoading = it.isLoadingFromCache || it.isLoadingFromRemote,
                 isError = it.remoteError
             )
         }
 
-    override suspend fun load() {
+    override fun load() {
         launchWork { state ->
             launchLoad(state = state)
         }
     }
 
-    override suspend fun resetAndLoad() {
+    override fun resetAndLoad() {
         launchWork {
             launchLoad(state = getDefaultInnerState(defaultData))
         }
     }
 
-    override suspend fun pullToRefresh() {
+    override fun pullToRefresh() {
         launchWork {
             if (it.pullToRefreshInProgress)
                 it

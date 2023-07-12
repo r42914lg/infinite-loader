@@ -1,7 +1,8 @@
 package com.r42914lg.myrealm.domain
 
-import com.r42914lg.myrealm.data.LocalRepository
+import com.r42914lg.myrealm.data.ReactiveRepository
 import com.r42914lg.myrealm.data.RemoteDataSource
+import com.r42914lg.myrealm.domain.ReactiveLoader.*
 import com.r42914lg.myrealm.utils.doOnError
 import com.r42914lg.myrealm.utils.doOnSuccess
 import kotlinx.coroutines.*
@@ -11,8 +12,8 @@ import kotlinx.coroutines.flow.map
 
 class CacheFirstLoader(
     private val remoteDataSource: RemoteDataSource,
-    private val localRepository: LocalRepository,
-) : Loader<List<Item>> {
+    private val localRepository: ReactiveRepository,
+) : ReactiveLoader<List<Item>> {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val workDispatcher = Dispatchers.IO.limitedParallelism(1)
@@ -22,28 +23,28 @@ class CacheFirstLoader(
     private val _state: MutableStateFlow<InnerState<ItemChunkDto<Item>>> =
         MutableStateFlow(getDefaultInnerState())
 
-    override val state: Flow<Loader.State<List<Item>>>
+    override val state: Flow<State<Flow<List<Item>>>>
         get() = _state.map {
-            Loader.State(
-                data = it.currentData.items,
-                isLoading = it.isLoadingFromCache || it.isLoadingFromRemote,
+            State(
+                data = localRepository.getItems(),
+                isLoading = it.isLoadingFromRemote,
                 isError = it.remoteError
             )
         }
 
-    override suspend fun load() {
+    override fun load() {
         launchWork { state ->
             launchLoad(state = state)
         }
     }
 
-    override suspend fun resetAndLoad() {
+    override fun resetAndLoad() {
         launchWork {
             launchLoad(state = getDefaultInnerState())
         }
     }
 
-    override suspend fun pullToRefresh() {
+    override fun pullToRefresh() {
         launchWork {
             if (it.pullToRefreshInProgress)
                 it
@@ -68,11 +69,7 @@ class CacheFirstLoader(
     }
 
     private fun launchLoad(state: InnerState<ItemChunkDto<Item>>): InnerState<ItemChunkDto<Item>> {
-        if (state.hasMoreInCache && !state.isLoadingFromCache)
-            return launchCacheLoad(state)
-
         return if (state.hasMoreInRemote
-            && !state.isLoadingFromCache
             && !state.isLoadingFromRemote
             && !state.remoteError
         ) {
@@ -86,7 +83,7 @@ class CacheFirstLoader(
         val pageToLoad = if (state.pullToRefreshInProgress)
             0
         else
-            state.currentData.page
+            state.page
 
         cs.launch(Dispatchers.IO) {
             remoteDataSource.getItems(pageToLoad)
@@ -110,51 +107,20 @@ class CacheFirstLoader(
         )
     }
 
-    private fun launchCacheLoad(state: InnerState<ItemChunkDto<Item>>): InnerState<ItemChunkDto<Item>> {
-        val pageToLoad = state.currentData.page
-        cs.launch(Dispatchers.IO) {
-            val chunk = localRepository.getItems(pageToLoad)
-            launchWork {
-                onCacheLoaded(chunk, it)
-            }
-        }
-        return state.copy(
-            isLoadingFromCache = true
-        )
-    }
-
-    private fun onCacheLoaded(
-        chunk: ItemChunkDto<Item>,
-        state: InnerState<ItemChunkDto<Item>>,
-    ): InnerState<ItemChunkDto<Item>> {
-        val mergedData = state.currentData.items + chunk.items
-        return state.copy(
-            currentData = ItemChunkDto(
-                mergedData,
-                chunk.page + 1,
-                chunk.hasMore,
-            ),
-            isLoadingFromCache = false,
-            hasMoreInCache = chunk.hasMore,
-        )
-    }
-
     private fun onRemoteLoaded(
         chunk: ItemChunkDto<Item>,
         state: InnerState<ItemChunkDto<Item>>,
     ): InnerState<ItemChunkDto<Item>> {
 
-        val mergedData = if (state.pullToRefreshInProgress)
-            chunk.items
-        else
-            state.currentData.items + chunk.items
+        cs.launch {
+            if (state.pullToRefreshInProgress)
+                localRepository.clearItems()
+
+            localRepository.addItems(chunk.items)
+        }
 
         return state.copy(
-            currentData = ItemChunkDto(
-                mergedData,
-                chunk.page + 1,
-                chunk.hasMore,
-            ),
+            page = chunk.page + 1,
             pullToRefreshInProgress = false,
             isLoadingFromRemote = false,
             remoteError = false,
@@ -164,10 +130,8 @@ class CacheFirstLoader(
 
     private fun <T> getDefaultInnerState(): InnerState<ItemChunkDto<T>> =
         InnerState(
-            ItemChunkDto(listOf(), 0, true),
-            isLoadingFromCache = false,
+            page = 0,
             isLoadingFromRemote = false,
-            hasMoreInCache = true,
             hasMoreInRemote = true,
             pullToRefreshInProgress = false,
             remoteError = false,
