@@ -1,5 +1,6 @@
 package com.r42914lg.myrealm.domain
 
+import com.r42914lg.myrealm.data.LOCAL_ITEMS
 import com.r42914lg.myrealm.data.LOCAL_PAGES_COUNT
 import com.r42914lg.myrealm.data.RemoteDataSource
 import com.r42914lg.myrealm.data.Repository
@@ -37,12 +38,7 @@ class BasicLoader private constructor(
 
     init {
         cs.launch {
-            repeat(LOCAL_PAGES_COUNT) { i ->
-                val chunk = remoteDataSource.getItems(i)
-                chunk.doOnSuccess {
-                    localRepository.addItems(it.items)
-                }
-            }
+            localRepository.addItems(LOCAL_ITEMS)
         }
     }
 

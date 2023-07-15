@@ -57,7 +57,7 @@ class OnboardingVmTest {
             ), awaitItem())
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE),
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE),
                 isLoading = false,
                 isError = false,
             ), awaitItem())
@@ -90,7 +90,7 @@ class OnboardingVmTest {
             ), awaitItem())
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE),
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
                 isLoading = false,
                 isError = false,
             ), awaitItem())
@@ -99,13 +99,13 @@ class OnboardingVmTest {
             viewModel.onAction(MainActivityEvent.Load)
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE),
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
                 isLoading = true,
                 isError = false,
             ), awaitItem())
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE * 2),
+                data = LOCAL_ITEMS,
                 isLoading = false,
                 isError = false,
             ), awaitItem())
@@ -114,13 +114,13 @@ class OnboardingVmTest {
             viewModel.onAction(MainActivityEvent.Load)
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE * 2),
+                data = LOCAL_ITEMS,
                 isLoading = true,
                 isError = false,
             ), awaitItem())
 
             assertEquals(Loader.State(
-                data = ITEMS.subList(0, ITEMS_PER_PAGE * 3),
+                data = LOCAL_ITEMS + REMOTE_ITEMS.subList(ITEMS_PER_PAGE * 2, ITEMS_PER_PAGE * 3).toList(),
                 isLoading = false,
                 isError = false,
             ), awaitItem())
@@ -128,6 +128,162 @@ class OnboardingVmTest {
             // attempt to load 4rd chunk, but no data in remote --> state remains the same
             viewModel.onAction(MainActivityEvent.Load)
             expectNoEvents()
+
+            cancel()
+        }
+    }
+
+    @Test
+    fun `#3 - load all three chunks - refresh - check 1st chunk only & comes from remote`() = runTest {
+
+        val viewModel = MainActivityVm(
+            ServiceLocator.resolve()
+        )
+
+        viewModel.itemState.test(20.seconds) {
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 1st chunk (comes from local)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 2nd chunk (comes from local)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS,
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 3rd chunk (comes from remote)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS,
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS + REMOTE_ITEMS.subList(ITEMS_PER_PAGE * 2, ITEMS_PER_PAGE * 3).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // pull to refresh -> should produce ALL 3 chunks from remote
+            viewModel.onAction(MainActivityEvent.PullToRefresh)
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS + REMOTE_ITEMS.subList(ITEMS_PER_PAGE * 2, ITEMS_PER_PAGE * 3).toList(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = REMOTE_ITEMS.subList(ITEMS_PER_PAGE * 0, ITEMS_PER_PAGE * 1).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            cancel()
+        }
+    }
+
+    @Test
+    fun `#4 - load all three chunks - reset & reload - check 1st chunk only & comes from local`() = runTest {
+
+        val viewModel = MainActivityVm(
+            ServiceLocator.resolve()
+        )
+
+        viewModel.itemState.test(20.seconds) {
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 1st chunk (comes from local)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 2nd chunk (comes from local)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS,
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // load 3rd chunk (comes from remote)
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS,
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS + REMOTE_ITEMS.subList(ITEMS_PER_PAGE * 2, ITEMS_PER_PAGE * 3).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
+
+            // pull to refresh -> should produce ALL 3 chunks from remote
+            viewModel.onAction(MainActivityEvent.ResetAndLoad)
+
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(ITEMS_PER_PAGE * 0, ITEMS_PER_PAGE * 1).toList(),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
 
             cancel()
         }
