@@ -1,8 +1,10 @@
 package com.r42914lg.myrealm.domain
 
+import com.r42914lg.myrealm.data.LOCAL_PAGES_COUNT
 import com.r42914lg.myrealm.data.RemoteDataSource
 import com.r42914lg.myrealm.data.Repository
 import com.r42914lg.myrealm.domain.Loader.*
+import com.r42914lg.myrealm.utils.ServiceLocator
 import com.r42914lg.myrealm.utils.doOnError
 import com.r42914lg.myrealm.utils.doOnSuccess
 import kotlinx.coroutines.*
@@ -10,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-class BasicLoader(
+class BasicLoader private constructor(
     private val defaultData: List<Item>,
     private val remoteDataSource: RemoteDataSource,
     private val localRepository: Repository,
@@ -32,6 +34,17 @@ class BasicLoader(
                 isError = it.remoteError
             )
         }
+
+    init {
+        cs.launch {
+            repeat(LOCAL_PAGES_COUNT) { i ->
+                val chunk = remoteDataSource.getItems(i)
+                chunk.doOnSuccess {
+                    localRepository.addItems(it.items)
+                }
+            }
+        }
+    }
 
     override fun load() {
         launchWork { state ->
@@ -174,4 +187,14 @@ class BasicLoader(
             pullToRefreshInProgress = false,
             remoteError = false,
         )
+
+    companion object {
+        fun getInstance(): Loader<List<Item>> =
+            BasicLoader(
+                listOf(),
+                ServiceLocator.resolve(),
+                ServiceLocator.resolve(),
+            )
+    }
 }
+

@@ -3,7 +3,7 @@ package com.r42914lg.myrealm.domain
 import kotlinx.coroutines.flow.Flow
 
 interface Loader<T> {
-    class State<T>(
+    data class State<T>(
         val data: T,
         val isLoading: Boolean,
         val isError: Boolean,

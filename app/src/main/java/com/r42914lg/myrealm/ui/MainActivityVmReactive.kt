@@ -12,10 +12,6 @@ class MainActivityVmReactive(
 
     val itemState = loader.state
 
-    init {
-        load()
-    }
-
     fun onAction(event: MainActivityEvent) {
         when (event) {
             MainActivityEvent.Load -> load()

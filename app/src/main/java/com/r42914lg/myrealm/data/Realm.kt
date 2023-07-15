@@ -1,17 +1,16 @@
 package com.r42914lg.myrealm.data
 
-import com.r42914lg.myrealm.MyApp.Companion.CHUNK_SIZE
-import com.r42914lg.myrealm.domain.ItemEntity
+import com.r42914lg.myrealm.domain.ItemEntityRealm
 import io.realm.Realm
 
 object DbInteractor {
-    fun read(): List<ItemEntity> {
+    fun read(): List<ItemEntityRealm> {
         val db = Realm.getDefaultInstance()
-        return db.where(ItemEntity::class.java)
+        return db.where(ItemEntityRealm::class.java)
             .findAll()
     }
 
-    fun addOrUpdate(items: List<ItemEntity>) {
+    fun addOrUpdate(items: List<ItemEntityRealm>) {
         val db = Realm.getDefaultInstance()
         db.beginTransaction()
         items.forEach {
@@ -22,7 +21,7 @@ object DbInteractor {
 
     fun deleteAll() {
         val db = Realm.getDefaultInstance()
-        db.where(ItemEntity::class.java)
+        db.where(ItemEntityRealm::class.java)
             .findAll()
             .forEach {
                 it?.deleteFromRealm()

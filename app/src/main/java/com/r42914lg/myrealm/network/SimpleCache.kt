@@ -2,14 +2,12 @@ package com.r42914lg.myrealm.network
 
 import android.content.Context
 import com.r42914lg.myrealm.network.HttpService.HEADER_CACHE
-import okhttp3.Cache
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import java.io.File
 import java.util.concurrent.TimeUnit
+
 
 object HttpService {
     const val HEADER_CACHE = "android-cache"
@@ -37,6 +35,7 @@ object HttpService {
                         return@addInterceptor response
                     }
                 }
+
                 chain.proceed(request)
             }
             .build()
@@ -57,8 +56,26 @@ object HttpService {
                         .header("Cache-Control", "public, only-if-cached, "
                                 + "max-stale=" + 60 * 60 * 24)
                     .build()
-                    chain.proceed(offlineRequest);
+
+                    chain.proceed(offlineRequest)
                 }
+            }
+            .build()
+    }
+
+    fun initForceCacheWhenOffline(ctx: Context) {
+        val httpCacheDirectory = File(ctx.cacheDir, CACHE_DIR)
+        val cache = Cache(httpCacheDirectory, 10 * 1024 * 1024)
+        httpClient = OkHttpClient.Builder()
+            .cache(cache)
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val builder = chain.request().newBuilder()
+                if (!NetworkTracker.internetAvailable) {
+                    builder.cacheControl(CacheControl.FORCE_CACHE)
+                }
+
+                chain.proceed(builder.build())
             }
             .build()
     }
@@ -75,4 +92,9 @@ interface SomeService {
     @GET("/my_endpoint")
     @Headers("$HEADER_CACHE: 60")
     suspend fun getData(): List<Any>
+}
+
+object NetworkTracker {
+    val internetAvailable: Boolean
+        get() = false
 }

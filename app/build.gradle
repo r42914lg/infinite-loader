@@ -36,6 +36,24 @@ android {
 
 dependencies {
 
+    // Turbine
+    testImplementation 'app.cash.turbine:turbine:0.12.1'
+
+    // InstantTaskExecutorRule
+    testImplementation "androidx.arch.core:core-testing:2.2.0"
+
+    // runTest, MainDispatcherRule etc.
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4") {
+        exclude group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-debug"
+    }
+
+    // Room
+    implementation "androidx.room:room-runtime:2.5.2"
+    implementation "androidx.room:room-ktx:2.5.2"
+    annotationProcessor "androidx.room:room-compiler:2.5.2"
+    kapt 'androidx.room:room-compiler:2.5.2'
+
+    // OkHttp & Retrofit
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 

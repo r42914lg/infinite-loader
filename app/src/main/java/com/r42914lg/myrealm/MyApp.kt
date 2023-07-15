@@ -1,12 +1,19 @@
 package com.r42914lg.myrealm
 
 import android.app.Application
+import com.r42914lg.myrealm.data.*
+import com.r42914lg.myrealm.domain.BasicLoader
+import com.r42914lg.myrealm.utils.ServiceLocator
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
 class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        initRealm()
+        initRoom()
+        initDependencies()
     }
 
     private fun initRealm() {
@@ -19,7 +26,14 @@ class MyApp : Application() {
         Realm.setDefaultConfiguration(config)
     }
 
-    companion object {
-        const val CHUNK_SIZE = 3
+    private fun initRoom() {
+        MyDatabase.setAppContext(this)
+    }
+
+    private fun initDependencies() {
+        ServiceLocator.register { TestApiImpl.getInstance() }
+        ServiceLocator.register { RemoteDataSource.getInstance() }
+        ServiceLocator.register { LocalRepository.getInstance() }
+        ServiceLocator.register { BasicLoader.getInstance() }
     }
 }

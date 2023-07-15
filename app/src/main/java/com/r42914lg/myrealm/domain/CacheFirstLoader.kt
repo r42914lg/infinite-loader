@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 class CacheFirstLoader(
     private val remoteDataSource: RemoteDataSource,
     private val localRepository: ReactiveRepository,
-) : ReactiveLoader<List<Item>> {
+) : ReactiveLoader<List<ItemEntityRoom>> {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val workDispatcher = Dispatchers.IO.limitedParallelism(1)
@@ -23,7 +23,7 @@ class CacheFirstLoader(
     private val _state: MutableStateFlow<InnerState<ItemChunkDto<Item>>> =
         MutableStateFlow(getDefaultInnerState())
 
-    override val state: Flow<State<Flow<List<Item>>>>
+    override val state: Flow<State<Flow<List<ItemEntityRoom>>>>
         get() = _state.map {
             State(
                 data = localRepository.getItems(),
@@ -116,7 +116,7 @@ class CacheFirstLoader(
             if (state.pullToRefreshInProgress)
                 localRepository.clearItems()
 
-            localRepository.addItems(chunk.items)
+            localRepository.addItems(chunk.items.toRoomEntity())
         }
 
         return state.copy(

@@ -1,5 +1,6 @@
 package com.r42914lg.myrealm.domain
 
+import androidx.room.Entity
 import io.realm.RealmObject
 import io.realm.annotations.PrimaryKey
 
@@ -15,23 +16,49 @@ data class ItemChunkDto<T>(
     val hasMore: Boolean,
 )
 
-data class ItemEntity(
-    @PrimaryKey
-    val id: Int,
-    val prop1: String,
-    val prop2: String,
-    ) : RealmObject()
+@Entity
+data class ItemEntityRoom(
+    @androidx.room.PrimaryKey
+    var id: Int = 0,
+    var prop1: String = "",
+    var prop2: String = "",
+)
 
-fun List<Item>.toEntity() =
+open class ItemEntityRealm : RealmObject() {
+    @PrimaryKey
+    var id: Int = 0
+    var prop1: String = ""
+    var prop2: String = ""
+}
+
+fun List<Item>.toRoomEntity() =
     map {
-        ItemEntity(
+        ItemEntityRoom(
             id = it.id,
             prop1 = it.prop1,
             prop2 = it.prop2,
         )
     }
 
-fun List<ItemEntity>.toDomain() =
+fun List<Item>.toRealmEntity() =
+    map {
+        ItemEntityRealm().apply {
+            id = it.id
+            prop1 = it.prop1
+            prop2 = it.prop2
+        }
+    }
+
+fun List<ItemEntityRoom>.roomToDomain() =
+    map {
+        Item(
+            id = it.id,
+            prop1 = it.prop1,
+            prop2 = it.prop2
+        )
+    }
+
+fun List<ItemEntityRealm>.realmToDomain() =
     map {
         Item(
             id = it.id,

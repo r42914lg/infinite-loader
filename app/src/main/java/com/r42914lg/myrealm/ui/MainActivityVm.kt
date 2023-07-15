@@ -1,9 +1,12 @@
 package com.r42914lg.myrealm.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.r42914lg.myrealm.domain.Item
 import com.r42914lg.myrealm.domain.Loader
+import com.r42914lg.myrealm.utils.ServiceLocator
 import kotlinx.coroutines.launch
 
 class MainActivityVm(
@@ -11,10 +14,6 @@ class MainActivityVm(
 ) : ViewModel() {
 
     val itemState = loader.state
-
-    init {
-        load()
-    }
 
     fun onAction(event: MainActivityEvent) {
         when (event) {
@@ -47,9 +46,17 @@ class MainActivityVm(
         loader.onClear()
     }
 
-    sealed interface UiState {
-        object Loading : UiState
-        object Error : UiState
-        class RenderItems(val data: List<Item>) : UiState
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(
+                modelClass: Class<T>,
+                extras: CreationExtras
+            ): T {
+                return MainActivityVm(
+                    ServiceLocator.resolve()
+                ) as T
+            }
+        }
     }
 }
