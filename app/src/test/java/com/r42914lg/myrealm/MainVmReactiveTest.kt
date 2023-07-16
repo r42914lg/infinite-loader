@@ -6,12 +6,9 @@ import com.r42914lg.myrealm.data.*
 import com.r42914lg.myrealm.domain.*
 import com.r42914lg.myrealm.ui.MainActivityEvent
 import com.r42914lg.myrealm.ui.MainActivityVm
-import com.r42914lg.myrealm.ui.MainActivityVmReactive
 import com.r42914lg.myrealm.utils.ServiceLocator
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -38,7 +35,7 @@ class VmReactiveTest {
     @Test
     fun `#1 - load 1st chunk - check items`() = runTest {
 
-        val viewModel = MainActivityVmReactive(
+        val viewModel = MainActivityVm(
             ServiceLocator.resolve()
         )
 
@@ -85,7 +82,7 @@ class VmReactiveTest {
             ServiceLocator.resolve()
         )
 
-        viewModel.itemState.test(20.seconds) {
+        viewModel.itemState.test {
             assertEquals(Loader.State<List<Item>>(
                 data = listOf(),
                 isLoading = false,

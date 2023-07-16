@@ -48,19 +48,19 @@ class VmTest {
                 isError = false,
             ), awaitItem())
 
-//            viewModel.onAction(MainActivityEvent.Load)
-//
-//            assertEquals(Loader.State<List<Item>>(
-//                data = listOf(),
-//                isLoading = true,
-//                isError = false,
-//            ), awaitItem())
-//
-//            assertEquals(Loader.State(
-//                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE),
-//                isLoading = false,
-//                isError = false,
-//            ), awaitItem())
+            viewModel.onAction(MainActivityEvent.Load)
+
+            assertEquals(Loader.State<List<Item>>(
+                data = listOf(),
+                isLoading = true,
+                isError = false,
+            ), awaitItem())
+
+            assertEquals(Loader.State(
+                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE),
+                isLoading = false,
+                isError = false,
+            ), awaitItem())
 
             cancel()
         }
