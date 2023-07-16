@@ -42,7 +42,7 @@ abstract class MyDatabase : RoomDatabase() {
 interface ItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItem(entities: List<ItemEntityRoom>)
+    fun insertItem(entities: List<ItemEntityRoom>)
 
     @Query("SELECT * FROM ItemEntityRoom")
     fun getItems(): Flow<List<ItemEntityRoom>>

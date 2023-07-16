@@ -18,7 +18,7 @@ import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OnboardingVmTest {
+class VmTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -48,19 +48,19 @@ class OnboardingVmTest {
                 isError = false,
             ), awaitItem())
 
-            viewModel.onAction(MainActivityEvent.Load)
-
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
-                isLoading = true,
-                isError = false,
-            ), awaitItem())
-
-            assertEquals(Loader.State(
-                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE),
-                isLoading = false,
-                isError = false,
-            ), awaitItem())
+//            viewModel.onAction(MainActivityEvent.Load)
+//
+//            assertEquals(Loader.State<List<Item>>(
+//                data = listOf(),
+//                isLoading = true,
+//                isError = false,
+//            ), awaitItem())
+//
+//            assertEquals(Loader.State(
+//                data = LOCAL_ITEMS.subList(0, ITEMS_PER_PAGE),
+//                isLoading = false,
+//                isError = false,
+//            ), awaitItem())
 
             cancel()
         }

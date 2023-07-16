@@ -1,7 +1,6 @@
 package com.r42914lg.myrealm.domain
 
 import com.r42914lg.myrealm.data.LOCAL_ITEMS
-import com.r42914lg.myrealm.data.LOCAL_PAGES_COUNT
 import com.r42914lg.myrealm.data.RemoteDataSource
 import com.r42914lg.myrealm.data.Repository
 import com.r42914lg.myrealm.domain.Loader.*
@@ -18,6 +17,16 @@ class BasicLoader private constructor(
     private val remoteDataSource: RemoteDataSource,
     private val localRepository: Repository,
 ) : Loader<List<Item>> {
+
+    data class InnerState<T>(
+        val currentData: T,
+        val isLoadingFromCache: Boolean,
+        val isLoadingFromRemote: Boolean,
+        val hasMoreInCache: Boolean,
+        val hasMoreInRemote: Boolean,
+        val pullToRefreshInProgress: Boolean,
+        val remoteError: Boolean,
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val workDispatcher = Dispatchers.IO.limitedParallelism(1)

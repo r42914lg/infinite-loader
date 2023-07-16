@@ -1,7 +1,14 @@
 package com.r42914lg.myrealm.data
 
 import com.r42914lg.myrealm.domain.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 interface Repository {
     suspend fun getItems(page: Int): ItemChunkDto<Item>
@@ -77,9 +84,7 @@ interface ReactiveRepository {
     suspend fun clearItems()
 }
 
-class ReactiveLocalRepo(
-
-) : ReactiveRepository {
+class ReactiveLocalRepo private constructor() : ReactiveRepository {
     override fun getItems(): Flow<List<ItemEntityRoom>> =
         MyDatabase.getDatabase().ItemDao()
             .getItems()
@@ -93,5 +98,41 @@ class ReactiveLocalRepo(
     override suspend fun clearItems() {
         MyDatabase.getDatabase().ItemDao()
             .clearAll()
+    }
+
+    companion object {
+        fun getInstance(): ReactiveRepository =
+            ReactiveLocalRepo()
+    }
+}
+
+class ReactiveLocalRepoInMem private constructor() : ReactiveRepository {
+
+    private val data = mutableListOf<ItemEntityRoom>()
+    private val dataFlow = MutableSharedFlow<List<ItemEntityRoom>>(replay = 1)
+    private val cs = CoroutineScope(SupervisorJob())
+    override fun getItems(): Flow<List<ItemEntityRoom>> {
+        cs.launch {
+            dataFlow.emit(data)
+        }
+
+        return dataFlow
+    }
+
+    override suspend fun addItems(chunk: List<ItemEntityRoom>) {
+        delay(50)
+        data += chunk
+        dataFlow.emit(data)
+    }
+
+    override suspend fun clearItems() {
+        delay(50)
+        data.clear()
+        dataFlow.emit(data)
+    }
+
+    companion object {
+        fun getInstance(): ReactiveRepository =
+            ReactiveLocalRepoInMem()
     }
 }
