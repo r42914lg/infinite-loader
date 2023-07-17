@@ -21,10 +21,10 @@ class LocalRepository private constructor(): Repository {
         val res = DbInteractor.read()
 
         val pageData = res.filter {
-            it.id >= page * ITEMS_PER_PAGE && it.id >= page * (ITEMS_PER_PAGE + 1)
+            it.id >= page * ITEMS_PER_PAGE && it.id < (page + 1) * ITEMS_PER_PAGE
         }
         val nextPageData = res.filter {
-            it.id >= page * (ITEMS_PER_PAGE + 1) && it.id >= page * (ITEMS_PER_PAGE + 2)
+            it.id >= (page + 1) * ITEMS_PER_PAGE && it.id < (page + 2) * ITEMS_PER_PAGE
         }
 
         return ItemChunkDto(

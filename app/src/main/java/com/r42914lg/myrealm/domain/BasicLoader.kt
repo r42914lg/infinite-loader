@@ -48,6 +48,7 @@ class BasicLoader private constructor(
     init {
         cs.launch {
             localRepository.addItems(LOCAL_ITEMS)
+            load()
         }
     }
 

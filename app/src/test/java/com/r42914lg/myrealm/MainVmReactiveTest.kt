@@ -13,7 +13,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class VmReactiveTest {
@@ -41,35 +40,39 @@ class VmReactiveTest {
 
         viewModel.itemState.test {
 
-            // initial state
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
+            // isLoading == true (we are loading)
+             assertEquals(Loader.State<List<Item>>(
+                 data = listOf(),
+                 isLoading = true,
+                 isError = false,
+             ), awaitItem())
+
+            // isLoading == true (we are caching -> just skip)
+            skipItems(1)
+
+            assertEquals(Loader.State(
+                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE),
                 isLoading = false,
                 isError = false,
             ), awaitItem())
 
-            // load 1st chunk (comes from local)
             viewModel.onAction(MainActivityEvent.Load)
 
             // isLoading == true (we are loading)
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
+            assertEquals(Loader.State(
+                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE),
                 isLoading = true,
                 isError = false,
             ), awaitItem())
 
-            // isLoading == true (we are storing to cache)
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
-                isLoading = true,
-                isError = false,
-            ), awaitItem())
+            skipItems(1)
 
             assertEquals(Loader.State(
-                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
+                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE * 2),
                 isLoading = false,
                 isError = false,
             ), awaitItem())
+
 
             cancel()
         }
@@ -85,26 +88,12 @@ class VmReactiveTest {
         viewModel.itemState.test {
             assertEquals(Loader.State<List<Item>>(
                 data = listOf(),
-                isLoading = false,
-                isError = false,
-            ), awaitItem())
-
-            // load 1st chunk (comes from local)
-            viewModel.onAction(MainActivityEvent.Load)
-
-            // isLoading == true (we are loading)
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
                 isLoading = true,
                 isError = false,
             ), awaitItem())
 
-            // isLoading == true (we are storing to cache)
-            assertEquals(Loader.State<List<Item>>(
-                data = listOf(),
-                isLoading = true,
-                isError = false,
-            ), awaitItem())
+            // isLoading == true (we are caching -> just skip)
+            skipItems(1)
 
             assertEquals(Loader.State(
                 data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
@@ -121,11 +110,8 @@ class VmReactiveTest {
                 isError = false,
             ), awaitItem())
 
-            assertEquals(Loader.State(
-                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE).toList(),
-                isLoading = true,
-                isError = false,
-            ), awaitItem())
+            // isLoading == true (we are caching -> just skip)
+            skipItems(1)
 
             assertEquals(Loader.State(
                 data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE * 2).toList(),
@@ -142,11 +128,8 @@ class VmReactiveTest {
                 isError = false,
             ), awaitItem())
 
-            assertEquals(Loader.State(
-                data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE * 2).toList(),
-                isLoading = true,
-                isError = false,
-            ), awaitItem())
+            // isLoading == true (we are caching -> just skip)
+            skipItems(1)
 
             assertEquals(Loader.State(
                 data = REMOTE_ITEMS.subList(0, ITEMS_PER_PAGE * 3).toList(),

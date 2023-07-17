@@ -1,5 +1,6 @@
 package com.r42914lg.myrealm.domain
 
+import com.r42914lg.myrealm.data.LOCAL_ITEMS
 import com.r42914lg.myrealm.data.ReactiveRepository
 import com.r42914lg.myrealm.data.RemoteDataSource
 import com.r42914lg.myrealm.utils.ServiceLocator
@@ -40,6 +41,12 @@ class CacheFirstLoader private constructor(
                 isError = it.remoteError
             )
         }
+
+    init {
+        cs.launch {
+            load()
+        }
+    }
 
     override fun load() {
         launchWork { state ->
