@@ -2,6 +2,7 @@ package com.r42914lg.myrealm.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.AbsListView
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -32,6 +33,18 @@ class MainActivity : AppCompatActivity() {
         feedRecyclerView = findViewById(R.id.feed)
         feedRecyclerView.layoutManager = LinearLayoutManager(this)
         feedRecyclerView.adapter = adapter
+        feedRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val lastVisibleItemIndex = (feedRecyclerView.layoutManager as LinearLayoutManager)
+                    .findLastVisibleItemPosition()
+
+                if (adapter.itemCount - lastVisibleItemIndex <= THRESHOLD) {
+                    viewModel.onAction(MainActivityEvent.Load)
+                }
+            }
+        })
 
         btnRefresh = findViewById(R.id.btn_refresh)
         btnReset = findViewById(R.id.btn_reset)
@@ -79,5 +92,9 @@ class MainActivity : AppCompatActivity() {
     }
     private fun renderItems(items: List<Item>) {
         adapter.setItems(items)
+    }
+
+    companion object {
+        const val THRESHOLD = 1
     }
 }

@@ -59,5 +59,5 @@ val REMOTE_ITEMS = listOf(
     Item(27, "27", "27-remote"),
     Item(28, "28", "28-remote"),
     Item(29, "29", "29-remote"),
-    Item(30, "30", "30")
+    Item(30, "30", "30-remote")
 )

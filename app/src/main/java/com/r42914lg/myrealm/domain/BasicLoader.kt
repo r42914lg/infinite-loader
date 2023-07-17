@@ -149,6 +149,7 @@ class BasicLoader private constructor(
         state: InnerState<ItemChunkDto<Item>>,
     ): InnerState<ItemChunkDto<Item>> {
         val mergedData = state.currentData.items + chunk.items
+        println("LG >>> onCacheLoaded NEXT CHUNK IDX ${chunk.page + 1} HAS MORE ${chunk.hasMore}")
         return state.copy(
             currentData = ItemChunkDto(
                 mergedData,
@@ -169,7 +170,7 @@ class BasicLoader private constructor(
             chunk.items
         else
             state.currentData.items + chunk.items
-
+println("LG >>> onRemoteLoaded NEXT CHUNK IDX ${chunk.page + 1} HAS MORE ${chunk.hasMore}")
         return state.copy(
             currentData = ItemChunkDto(
                 mergedData,
