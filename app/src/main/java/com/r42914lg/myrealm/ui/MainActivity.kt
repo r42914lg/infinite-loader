@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             Toast.LENGTH_LONG).show()
     }
     private fun renderItems(items: List<Item>) {
-        adapter.setItems(items)
+        adapter.differ.submitList(items)
     }
 
     companion object {

@@ -5,19 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.r42914lg.myrealm.R
 import com.r42914lg.myrealm.domain.Item
 
 class ItemAdapter : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
 
-    private var _items: List<Item> = listOf()
+    private val differCallback = object : DiffUtil.ItemCallback<Item>(){
+        override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return  oldItem.id == newItem.id
+        }
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun setItems(items: List<Item>) {
-        _items = items
-        notifyDataSetChanged()
+        @SuppressLint("DiffUtilEquals")
+        override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+            return oldItem == newItem
+        }
+
     }
+
+    val differ = AsyncListDiffer(this,differCallback)
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val idTv: TextView = view.findViewById(R.id.item_id)
@@ -33,11 +41,11 @@ class ItemAdapter : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.idTv.text = _items[position].id.toString()
-        holder.prop1Tv.text = _items[position].prop1
-        holder.prop2Tv.text = _items[position].prop2
+        holder.idTv.text = differ.currentList[position].id.toString()
+        holder.prop1Tv.text = differ.currentList[position].prop1
+        holder.prop2Tv.text = differ.currentList[position].prop2
     }
 
     override fun getItemCount(): Int =
-        _items.size
+        differ.currentList.size
 }
