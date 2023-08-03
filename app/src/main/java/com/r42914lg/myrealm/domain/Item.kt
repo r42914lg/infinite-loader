@@ -27,8 +27,8 @@ data class ItemEntityRoom(
 open class ItemEntityRealm : RealmObject() {
     @PrimaryKey
     var id: Int = 0
-    var prop1: String = ""
-    var prop2: String = ""
+    var prop1Renamed: String = ""
+    var prop3New: String = ""
 }
 
 fun List<Item>.toRoomEntity() =
@@ -44,8 +44,8 @@ fun List<Item>.toRealmEntity() =
     map {
         ItemEntityRealm().apply {
             id = it.id
-            prop1 = it.prop1
-            prop2 = it.prop2
+            prop1Renamed = it.prop1
+            prop3New = it.prop2
         }
     }
 
@@ -62,7 +62,7 @@ fun List<ItemEntityRealm>.realmToDomain() =
     map {
         Item(
             id = it.id,
-            prop1 = it.prop1,
-            prop2 = it.prop2
+            prop1 = it.prop1Renamed,
+            prop2 = it.prop3New
         )
     }
